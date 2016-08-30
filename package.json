@@ -1,0 +1,41 @@
+{
+  "name": "gulp-js-deps",
+  "version": "0.1.0",
+  "description": "Build (require) dependency list for JS files",
+  "main": "index.js",
+  "scripts": {
+    "test": "node_modules/istanbul/lib/cli.js cover -x 'spec/**/*' node_modules/tape/bin/tape -- spec/*Spec.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/engina/gulp-js-deps.git"
+  },
+  "keywords": [
+    "gulpplugin",
+    "javascript",
+    "js",
+    "dependency",
+    "list",
+    "build"
+  ],
+  "author": "Engin Aydogan <engin@bzzzt.biz>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/engina/gulp-js-deps/issues"
+  },
+  "homepage": "https://github.com/engina/gulp-js-deps#readme",
+  "devDependencies": {
+    "eslint": "^3.4.0",
+    "eslint-config-google": "^0.6.0",
+    "fs-extra": "^0.30.0",
+    "gulp": "^3.9.1",
+    "istanbul": "^0.4.5",
+    "tape": "^4.6.0",
+    "touch": "^1.0.0"
+  },
+  "dependencies": {
+    "gulp-util": "^3.0.7",
+    "js-deps": "^0.1.1",
+    "through2": "^2.0.1"
+  }
+}
