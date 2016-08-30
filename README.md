@@ -5,6 +5,12 @@
 
 Gulp plugin to run only affected unit tests.
 
+## Install
+```
+npm install --save-dev gulp-js-deps
+```
+
+## Example gulp configuration
 ```javascript
 var gulp  = require('gulp');
 var jsdeps = require('gulp-js-deps');
