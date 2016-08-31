@@ -1,6 +1,6 @@
 {
   "name": "gulp-js-deps",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Build (require) dependency list for JS files",
   "main": "index.js",
   "scripts": {
