@@ -6,9 +6,10 @@ var jsDeps = require('js-deps');
 
 var PLUGIN_NAME = 'gulp-js-deps';
 
-module.exports.build = () => {
+module.exports.build = options => {
   return through2.obj(function(file, enc, done) {
-    var deps = jsDeps.analyze(file.path).filter(dep => dep.startsWith('/'));
+    var deps = jsDeps.analyze(file.path, options)
+    .filter(dep => dep.startsWith('/'));
     var relativePath = file.path.substr(file.cwd.length + 1);
     var depFile = new File({
       path: relativePath,

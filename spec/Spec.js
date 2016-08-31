@@ -4,7 +4,7 @@ var path = require('path');
 var fs   = require('fs-extra');
 var touch  = require('touch');
 var through2 = require('through2');
-
+var File = require('vinyl');
 var gulpJsDeps = require('../');
 var DEPS_DIR = '.deps';
 
@@ -12,16 +12,16 @@ function verifyDependants(sourcePath, expectedDepends, test) {
   var depends = [];
   test.doesNotThrow(() => {
     depends = fs.readFileSync(sourcePath, 'utf8');
-  }, Error, 'should be created');
+  }, Error, 'should create dependency list');
 
   test.doesNotThrow(() => {
     depends = JSON.parse(depends);
-  }, Error, 'should be a valid JSON file');
+  }, Error, 'should create a valid JSON file');
 
   test.deepEqual(depends, expectedDepends);
 }
 
-test('dependency lists', test => {
+test('build()', test => {
   gulp.src('spec/fixtures/**/*.js', {read: false})
   .pipe(gulpJsDeps.build())
   .pipe(gulp.dest(DEPS_DIR))
@@ -81,5 +81,32 @@ test('dependsOn()', test => {
   });
 });
 
+test('build() when fed with deleted files', t => {
+  // create a dummy stream to get things going
+  gulp.src('spec/**/*.js')
+  // replace the valid files with invalid ones.
+  .pipe(through2.obj(function(file, enc, done) {
+    this.push(new File({
+      path: '/does not exist'
+    }));
+    done();
+  }))
+  .pipe(gulpJsDeps.build())
+  .pipe(through2.obj(function(file, enc, done) {
+    // swallow the files so that gulp.dest below doesn't cry
+    done();
+  }))
+  .pipe(gulp.dest('.tmp'))
+  .on('error', err => {
+    t.fail('should not emit error');
+    t.end();
+  })
+  .on('end', () => {
+    t.pass('should complete without error');
+    t.end();
+  });
 
-fs.removeSync('.deps');
+  fs.removeSync('.deps');
+});
+
+
