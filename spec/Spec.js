@@ -52,11 +52,12 @@ test('build()', test => {
 
 test('dependsOn()', test => {
   var watcher;
+  var root = path.resolve(path.join('spec', 'fixtures'));
   watcher = gulp.watch('spec/fixtures/**/*.js', file => {
-    var root = path.resolve(path.join('spec', 'fixtures'));
     var expectedAffected = [
       path.join(root, 'index.js'),
-      path.join(root, 'spec', 'indexSpec.js')
+      path.join(root, 'spec', 'indexSpec.js'),
+      path.join(root, 'lib', 'a.js')
     ];
 
     var actualAffected = [];
@@ -77,7 +78,8 @@ test('dependsOn()', test => {
     });
   })
   .on('ready', () => {
-    touch(path.join('spec', 'fixtures', 'lib', 'a.js'));
+    // See if it can find dependents of fixture/lib/a.js
+    touch(path.join(root, 'lib', 'a.js'));
   });
 });
 
@@ -105,8 +107,38 @@ test('build() when fed with deleted files', t => {
     t.pass('should complete without error');
     t.end();
   });
-
-  fs.removeSync('.deps');
 });
 
+test('dependsOn()', test => {
+  var watcher;
+  watcher = gulp.watch('spec/fixtures/**/*.js', file => {
+    var root = path.resolve(path.join('spec', 'fixtures'));
+    var expectedAffected = [
+      path.join(root, 'spec', 'indexSpec.js')
+    ];
 
+    var actualAffected = [];
+    // Stream all dependency lists
+    gulp.src(DEPS_DIR + '/**/*.js')
+    // Filter files depend on the modified file 'file'
+    .pipe(gulpJsDeps.dependsOn(file.path))
+    // Store the results for testing
+    .pipe(through2.obj(function(file, enc, done) {
+      actualAffected.push(file.path);
+      done();
+    }))
+    .pipe(gulp.dest('.tmp'))
+    .on('end', () => {
+      test.deepEqual(actualAffected.sort(), expectedAffected.sort());
+      watcher.end();
+      test.end();
+      fs.removeSync('.deps');
+    });
+  })
+  .on('ready', () => {
+    // Special case, see if it can find it itself (indexSpec.js is not a
+    // dependant of indexSpec.js, but if it is modified, we want to run the
+    // indexSpec.js anyway)
+    touch(path.join('spec', 'fixtures', 'spec', 'indexSpec.js'));
+  });
+});

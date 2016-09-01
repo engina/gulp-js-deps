@@ -26,6 +26,7 @@ function buildDeps(glob) {
 }
 
 gulp.task('build-deps', ['clean-deps'], done => {
+  // The files that we want to build a dependency list of
   return buildDeps(['spec/**/*Spec.js']);
 });
 
@@ -35,30 +36,16 @@ gulp.task('clean-deps', done => {
 });
 
 gulp.task('test', ['build-deps'], cb => {
-  gulp.watch('src/**/*.js', file => {
-    // A source code has been modified
+  gulp.watch(['src/**/*.js', 'spec/**/*.js'], file => {
+    // Look through dependency files
     gulp.src('.deps/**/*.js')
-    // Find the unit tests affected by the modified `file`
+    // Find the files affected by the modified `file`
     .pipe(jsdeps.dependsOn(file.path))
     // Here we have the affected unit tests, let's run them
     .pipe(shell('node <%= file.path %> | node_modules/tap-diff/distributions/cli.js', {env: {FORCE_COLOR: true}, ignoreErrors: true}))
     // since files that these tests depend on has changed,
     // recalculate test files' dependencies just in case
     // that the `file` has changed its require()s.
-    .pipe(jsdeps.build())
-    .pipe(gulp.dest('.deps'));
-  });
-
-  gulp.watch(['spec/**/*Spec.js'], file => {
-    if (file.type === 'deleted') {
-      // Unit test deleted, ignore
-      return;
-    }
-    // Unit test has been modified
-    gulp.src(file.path)
-    // Run the tests
-    .pipe(shell('node <%= file.path %> | node_modules/tap-diff/distributions/cli.js', {env: {FORCE_COLOR: true}, ignoreErrors: true}))
-    // Modified test file might have new require()s, re-calculate deps
     .pipe(jsdeps.build())
     .pipe(gulp.dest('.deps'));
   });
